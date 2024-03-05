@@ -9,17 +9,18 @@ typedef struct {
 } tap;
 
 enum {
-  SINGLE_TAP = 1,
-  SINGLE_HOLD = 2,
-  DOUBLE_TAP = 3,
-  DOUBLE_HOLD = 4,
-  DOUBLE_SINGLE_TAP = 5, //send two single taps
-  TRIPLE_TAP = 6,
-  TRIPLE_HOLD = 7
+  TD_SINGLE_TAP = 1,
+  TD_SINGLE_HOLD = 2,
+  TD_DOUBLE_TAP = 3,
+  TD_DOUBLE_HOLD = 4,
+  TD_DOUBLE_SINGLE_TAP = 5, //send two single taps
+  TD_TRIPLE_TAP = 6,
+  TD_TRIPLE_HOLD = 7
 };
 
 //Tap dance enums
 enum {
+    O_Umlaut = 0,
   A_Umlaut = 1
 };
 
@@ -34,7 +35,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [0] = LAYOUT(
         QK_GESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
-        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                          KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
+        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                          KC_Y,    KC_U,    KC_I,    TD(O_Umlaut),    KC_P,    KC_BSLS,
         KC_MINS,  TD(A_Umlaut),    KC_S,    KC_D,    KC_F,    KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
         OSM(MOD_LSFT), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                                    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
         KC_LCTL, KC_EQL,   KC_LALT,   KC_LGUI,          OSL(1), OSM(MOD_LSFT), KC_DEL,       KC_BSPC, OSM(MOD_LSFT), OSL(1),          KC_LBRC, KC_RBRC,   KC_SCLN, KC_QUOT,
@@ -89,9 +90,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
  */
 int cur_dance (tap_dance_state_t *state) {
   if (state->count == 1) {
-    if (state->interrupted || !state->pressed)  return SINGLE_TAP;
+    if (state->interrupted || !state->pressed)  return TD_SINGLE_TAP;
     //key has not been interrupted, but they key is still held. Means you want to send a 'HOLD'.
-    else return SINGLE_HOLD;
+    else return TD_SINGLE_HOLD;
   }
   else if (state->count == 2) {
     /*
@@ -99,16 +100,16 @@ int cur_dance (tap_dance_state_t *state) {
      * action when hitting 'pp'. Suggested use case for this return value is when you want to send two
      * keystrokes of the key, and not the 'double tap' action/macro.
     */
-    if (state->interrupted) return DOUBLE_SINGLE_TAP;
-    else if (state->pressed) return DOUBLE_HOLD;
-    else return DOUBLE_TAP;
+    if (state->interrupted) return TD_DOUBLE_SINGLE_TAP;
+    else if (state->pressed) return TD_DOUBLE_HOLD;
+    else return TD_DOUBLE_TAP;
   }
   //Assumes no one is trying to type the same letter three times (at least not quickly).
   //If your tap dance key is 'KC_W', and you want to type "www." quickly - then you will need to add
   //an exception here to return a 'TRIPLE_SINGLE_TAP', and define that enum just like 'DOUBLE_SINGLE_TAP'
   if (state->count == 3) {
-    if (state->interrupted || !state->pressed)  return TRIPLE_TAP;
-    else return TRIPLE_HOLD;
+    if (state->interrupted || !state->pressed)  return TD_TRIPLE_TAP;
+    else return TD_TRIPLE_HOLD;
   }
   else return 8; //magic number. At some point this method will expand to work for more presses
 }
@@ -119,22 +120,60 @@ static tap xtap_state = {
   .state = 0
 };
 
-void a_finished (tap_dance_state_t *state, void *user_data) {
-  xtap_state.state = cur_dance(state);
+
+typedef struct {
+    uint16_t on_tap;
+    uint16_t on_hold;
+} tap_dance_config_t;
+
+// since the functions already get a `user_data` we may be able to get rid of these "wrappers"
+// and manually set things up on the array of tap dance definitions (by creating the struct
+// ourselves instead of using the ADVANCED macro), but im lazy to search the codebase and figure out
+static tap_dance_config_t a_config = {
+    .on_tap  = KC_A,
+    .on_hold = RALT(KC_Q), // see how we store the modifier+key combination :D
+};
+static tap_dance_config_t o_config = {
+    .on_tap  = KC_O,
+    .on_hold = RALT(KC_P), // see how we store the modifier+key combination :D
+};
+
+
+void common_finished(tap_dance_state_t *state, void *user_data) {
+    tap_dance_config_t *config = (tap_dance_config_t *)user_data;
+    xtap_state.state = cur_dance(state);
   switch (xtap_state.state) {
-    case SINGLE_TAP: register_code(KC_A); break;
-    case SINGLE_HOLD: register_code(KC_RALT); register_code(KC_Q); break;
+    case TD_DOUBLE_TAP: tap_code16(config->on_tap); register_code16(config->on_tap); break;
+    case TD_SINGLE_TAP: register_code16(config->on_tap); break;
+    case TD_SINGLE_HOLD: register_code16(config->on_hold); break;
+    case TD_DOUBLE_SINGLE_TAP: tap_code16(config->on_tap); register_code16(config->on_tap); break;
   }
 }
-
-void a_reset (tap_dance_state_t *state, void *user_data) {
+void common_reset(tap_dance_state_t *state, void *user_data) {
+    tap_dance_config_t *config = (tap_dance_config_t *)user_data;
+    xtap_state.state = cur_dance(state);
   switch (xtap_state.state) {
-    case SINGLE_TAP: unregister_code(KC_A); break;
-    case SINGLE_HOLD: unregister_code(KC_RALT); unregister_code(KC_Q); break;
+    case TD_DOUBLE_TAP: unregister_code16(config->on_tap); break;
+    case TD_SINGLE_TAP: unregister_code16(config->on_tap); break;
+    case TD_SINGLE_HOLD: unregister_code16(config->on_hold); break;
+    case TD_DOUBLE_SINGLE_TAP: unregister_code16(config->on_tap); break;
   }
-  xtap_state.state = 0; 
+  xtap_state.state = 0;
+}
+void a_finished(tap_dance_state_t *state, void *user_data) {
+    common_finished(state, &a_config);
+}
+void a_reset(tap_dance_state_t *state, void *user_data) {
+    common_reset(state, &a_config);
+}
+void o_finished(tap_dance_state_t *state, void *user_data) {
+    common_finished(state, &o_config);
+}
+void o_reset(tap_dance_state_t *state, void *user_data) {
+    common_reset(state, &o_config);
 }
 
 tap_dance_action_t tap_dance_actions[] = {
-  [A_Umlaut]     = ACTION_TAP_DANCE_FN_ADVANCED(NULL,a_finished, a_reset)
+  [A_Umlaut]     = ACTION_TAP_DANCE_FN_ADVANCED(NULL,a_finished, a_reset),
+  [O_Umlaut]     = ACTION_TAP_DANCE_FN_ADVANCED(NULL,o_finished, o_reset)
 };
