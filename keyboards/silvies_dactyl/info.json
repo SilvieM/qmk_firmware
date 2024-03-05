@@ -14,7 +14,7 @@
     },
     "split": {
         "enabled": true,
-        "soft_serial_pin": "GP8"
+        "soft_serial_pin": "GP11"
     },
     "matrix_pins": {
         "rows": [ "GP0", "GP1", "GP2", "GP3", "GP4",  "GP5" ],
