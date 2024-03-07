@@ -8,7 +8,7 @@ typedef struct {
   int state;
 } tap;
 
-enum {
+typedef enum {
   TD_SINGLE_TAP = 1,
   TD_SINGLE_HOLD = 2,
   TD_DOUBLE_TAP = 3,
@@ -16,7 +16,7 @@ enum {
   TD_DOUBLE_SINGLE_TAP = 5, //send two single taps
   TD_TRIPLE_TAP = 6,
   TD_TRIPLE_HOLD = 7
-};
+} td_state_t;
 
 //Tap dance enums
 enum {
@@ -35,16 +35,16 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
      */
     [0] = LAYOUT(
         QK_GESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
-        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                          KC_Y,    KC_U,    KC_I,    TD(O_Umlaut),    KC_P,    KC_BSLS,
-        KC_MINS,  TD(A_Umlaut),    KC_S,    KC_D,    KC_F,    KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-        OSM(MOD_LSFT), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                                    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-        KC_LCTL, KC_EQL,   KC_LALT,   KC_LGUI,          OSL(1), OSM(MOD_LSFT), KC_DEL,       KC_BSPC, OSM(MOD_LSFT), OSL(1),          KC_LBRC, KC_RBRC,   KC_SCLN, KC_QUOT,
+        KC_TAB,  KC_Q,    KC_W,    KC_F,    KC_P,    KC_B,                                          KC_J,    KC_L,    KC_U,    KC_Y,    KC_SCLN,    RALT(KC_Y), //ü
+        KC_MINS,  KC_A,    KC_R,    KC_S,    KC_T,    KC_G,                                         KC_M,    KC_N,    KC_E,    KC_I,    KC_O, RALT(KC_Q),//ä
+        OSM(MOD_LSFT), KC_Z,    KC_X,    KC_C,    KC_D,    KC_V,                                    KC_K,    KC_H,    KC_COMM, KC_DOT,  KC_SLSH, RALT(KC_P),//ö
+        KC_LCTL, KC_EQL,   KC_LALT,   KC_LGUI,          OSL(1), OSM(MOD_LSFT), KC_DEL,       KC_BSPC, OSM(MOD_LSFT), OSL(1),          KC_LBRC, KC_RBRC,  RALT(KC_S), KC_QUOT,
                                                         KC_SPC, KC_LEFT, KC_RGHT,          KC_DOWN, KC_UP, KC_ENT                     
                                                           
     ),
     [1] = LAYOUT(
-        QK_BOOT,  KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,                              KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,    QK_BOOT,
-        KC_TRNS,    KC_EXLM,  KC_AT,    KC_HASH,    KC_DLR,        KC_PERC,                              KC_CIRC,    KC_AMPR,    KC_ASTR,    KC_LPRN,    KC_RPRN,    KC_TRNS,
+        QK_BOOT,  KC_F1,    KC_F2,    KC_F3,    KC_F4,    KC_F5,                                        KC_F6,    KC_F7,    KC_F8,    KC_F9,    KC_F10,    QK_F11,
+        KC_TRNS,    KC_EXLM,  KC_AT,    KC_HASH,    KC_DLR,        KC_PERC,                             KC_CIRC,    KC_AMPR,    KC_ASTR,    KC_LPRN,    KC_RPRN,    KC_F12,
         KC_0,       KC_1,    KC_2,    KC_3,         KC_4,            KC_5,                              KC_6,    KC_7,    KC_8,    KC_9,    KC_0, KC_TRNS,
         KC_TRNS, KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,    KC_TRNS,                               KC_TRNS,    KC_TRNS,    KC_TRNS, KC_TRNS,  KC_BSLS, KC_TRNS,
         KC_TRNS, KC_TRNS,   KC_TRNS,   KC_TRNS,          KC_TRNS, KC_TRNS, KC_TRNS,                KC_TRNS, KC_TRNS, KC_TRNS,           KC_TRNS, KC_PIPE,   KC_TRNS, KC_TRNS,
@@ -53,10 +53,10 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     ),
     [2] = LAYOUT(
         QK_GESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
-        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                          KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    KC_BSLS,
-        KC_MINS,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, KC_QUOT,
-        OSM(MOD_LSFT), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                                    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_RSFT,
-        KC_LCTL, KC_EQL,   KC_LALT,   KC_LGUI,          OSL(1), OSM(MOD_LSFT), KC_DEL,       KC_BSPC, OSM(MOD_LSFT), OSL(1),          KC_LBRC, KC_RBRC,   KC_SCLN, KC_QUOT,
+        KC_TAB,  KC_Q,    KC_W,    KC_E,    KC_R,    KC_T,                                          KC_Y,    KC_U,    KC_I,    KC_O,    KC_P,    RALT(KC_Y),
+        KC_MINS,  KC_A,    KC_S,    KC_D,    KC_F,    KC_G,                                         KC_H,    KC_J,    KC_K,    KC_L,    KC_SCLN, RALT(KC_Q),
+        OSM(MOD_LSFT), KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                                    KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, RALT(KC_P),
+        KC_LCTL, KC_EQL,   KC_LALT,   KC_LGUI,          OSL(1), OSM(MOD_LSFT), KC_DEL,       KC_BSPC, OSM(MOD_LSFT), OSL(1),          KC_LBRC, KC_RBRC,   RALT(KC_S), KC_QUOT,
                                                         KC_SPC, KC_LEFT, KC_RGHT,          KC_DOWN, KC_UP, KC_ENT                     
                                                           
     ),
@@ -114,16 +114,11 @@ int cur_dance (tap_dance_state_t *state) {
   else return 8; //magic number. At some point this method will expand to work for more presses
 }
 
-//instanalize an instance of 'tap' for the 'x' tap dance.
-static tap xtap_state = {
-  .is_press_action = true,
-  .state = 0
-};
-
 
 typedef struct {
     uint16_t on_tap;
     uint16_t on_hold;
+    td_state_t state;
 } tap_dance_config_t;
 
 // since the functions already get a `user_data` we may be able to get rid of these "wrappers"
@@ -141,24 +136,29 @@ static tap_dance_config_t o_config = {
 
 void common_finished(tap_dance_state_t *state, void *user_data) {
     tap_dance_config_t *config = (tap_dance_config_t *)user_data;
-    xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case TD_DOUBLE_TAP: tap_code16(config->on_tap); register_code16(config->on_tap); break;
+    config->state = cur_dance(state);
+  switch (config->state) {
     case TD_SINGLE_TAP: register_code16(config->on_tap); break;
+    case TD_DOUBLE_TAP: tap_code16(config->on_tap); register_code16(config->on_tap); break;
+    case TD_TRIPLE_TAP: tap_code16(config->on_tap); tap_code16(config->on_tap); register_code16(config->on_tap); break;
     case TD_SINGLE_HOLD: register_code16(config->on_hold); break;
+    case TD_DOUBLE_HOLD: tap_code16(config->on_hold); register_code16(config->on_hold); break;
+    case TD_TRIPLE_HOLD: tap_code16(config->on_hold); tap_code16(config->on_hold); register_code16(config->on_hold); break;
     case TD_DOUBLE_SINGLE_TAP: tap_code16(config->on_tap); register_code16(config->on_tap); break;
   }
 }
 void common_reset(tap_dance_state_t *state, void *user_data) {
     tap_dance_config_t *config = (tap_dance_config_t *)user_data;
-    xtap_state.state = cur_dance(state);
-  switch (xtap_state.state) {
-    case TD_DOUBLE_TAP: unregister_code16(config->on_tap); break;
+  switch (config->state) {
     case TD_SINGLE_TAP: unregister_code16(config->on_tap); break;
+    case TD_DOUBLE_TAP: unregister_code16(config->on_tap); break;
+    case TD_TRIPLE_TAP: unregister_code16(config->on_tap); break;
     case TD_SINGLE_HOLD: unregister_code16(config->on_hold); break;
+    case TD_DOUBLE_HOLD: unregister_code16(config->on_hold); break;
+    case TD_TRIPLE_HOLD: unregister_code16(config->on_hold); break;
     case TD_DOUBLE_SINGLE_TAP: unregister_code16(config->on_tap); break;
   }
-  xtap_state.state = 0;
+  config->state = 0;
 }
 void a_finished(tap_dance_state_t *state, void *user_data) {
     common_finished(state, &a_config);
