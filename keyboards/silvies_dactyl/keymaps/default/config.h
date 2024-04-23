@@ -22,3 +22,4 @@
 #define RP2040_BOOTLOADER_DOUBLE_TAP_RESET_TIMEOUT 200U // Timeout window in ms in which the double tap can occur.
 #define EE_HANDS
 #define TAPPING_TERM 200
+#define SPLIT_WATCHDOG_ENABLE
